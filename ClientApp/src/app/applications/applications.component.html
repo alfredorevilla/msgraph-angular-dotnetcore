@@ -1,0 +1,34 @@
+<p>You can do filter table data, in this case with observables and our <code>NgbHighlight</code> component used in Typeahead</p>
+
+<form>
+  <div class="form-group form-inline">
+    Full text search: <input class="form-control ml-2" type="text" [formControl]="filter" />
+  </div>
+</form>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">App Id</th>
+      <th scope="col">Display Name</th>
+      <th scope="col">Service Principals</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let application of applications$ | async; index as i">
+      <td>
+        {{application.appId}}
+      </td>
+      <td>
+        <ngb-highlight [result]="application.displayName" [term]="filter.value"></ngb-highlight>
+      </td>
+      <td>
+        <ul>
+          <li *ngFor="let sp of application.servicePrincipalsIds">
+            sp.id
+          </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
