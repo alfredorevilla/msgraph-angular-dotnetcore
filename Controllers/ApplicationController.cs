@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using msgraph_angular_dotnetcore.Models;
 using Services;
 
 namespace msgraph_angular_dotnetcore.Controllers
@@ -15,9 +16,19 @@ namespace msgraph_angular_dotnetcore.Controllers
             this.applicationService = applicationService;
         }
 
-        public IAsyncEnumerable<dynamic> QuickGet([FromQuery] string searchText)
+        public async IAsyncEnumerable<ApplicationModel> QuickGet([FromQuery] string searchText)
         {
-            return applicationService.QuickGetAsync(searchText);
+            var result = applicationService.QuickGetAsync(searchText);
+
+            await foreach (var item in result)
+            {
+                yield return new ApplicationModel
+                {
+                    AppId = item.AppId,
+                    DisplayName = item.DisplayName,
+                    //ServicePrincipalsIds = 
+                };
+            }
         }
     }
 }
