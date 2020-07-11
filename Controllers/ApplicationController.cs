@@ -18,7 +18,7 @@ namespace msgraph_angular_dotnetcore.Controllers
 
         public async IAsyncEnumerable<ApplicationModel> QuickGet([FromQuery] string searchText)
         {
-            var result = applicationService.QuickGetAsync(searchText);
+            var result = applicationService.SearchAsync(searchText);
 
             await foreach (var item in result)
             {
