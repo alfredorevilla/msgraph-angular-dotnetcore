@@ -26,7 +26,8 @@ namespace msgraph_angular_dotnetcore.Controllers
                 {
                     AppId = item.AppId,
                     DisplayName = item.DisplayName,
-                    //ServicePrincipalsIds = 
+                    ServicePrincipalsIds = item.ServicePrincipalsIds,
+                    OwnersNames = item.OwnersNames
                 };
             }
         }

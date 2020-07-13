@@ -9,5 +9,6 @@ namespace msgraph_angular_dotnetcore.Models
         public string AppId { get; set; }
 
         public IEnumerable<string> ServicePrincipalsIds { get; set; }
+        public IEnumerable<string> OwnersNames { get;  set; }
     }
 }

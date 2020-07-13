@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
+using msgraph_angular_dotnetcore.Models;
 using Newtonsoft.Json;
 
 namespace Services
@@ -31,18 +33,40 @@ namespace Services
 
         private readonly ILogger<ApplicationService> logger;
 
-        public async IAsyncEnumerable<Application> SearchAsync(string searchText)
+        public async IAsyncEnumerable<ApplicationModel> SearchAsync(string searchText)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 throw new ArgumentException(nameof(searchText));
             }
 
-            var rm = await client.Applications.Request(new Option[] { new HeaderOption("consistencyLevel", "eventual"), new QueryOption("$count", "true") }).GetAsync();
+            var applicationPage = await client.Applications.Request(new Option[] { new HeaderOption("consistencyLevel", "eventual"), new QueryOption("$count", "true") }).Top(5).GetAsync();
 
-            foreach (var item in rm)
+            var batchRequestContent = new BatchRequestContent();
+
+            var servicePrincipalsRequestId = batchRequestContent.AddBatchRequestStep(
+            client.ServicePrincipals.Request().Select("id").Filter(string.Join(" or ", applicationPage.Select(a => $"appId eq '{a.AppId}'"))));
+
+            var ownerRequestIds = applicationPage.Select(a => new { a.AppId, Id = batchRequestContent.AddBatchRequestStep(client.Applications[a.Id].Owners.Request().Select("id,displayName,userPrincipalName")) }).ToDictionary(a => a.AppId, a => a.Id);
+
+            var returnedResponse = await client.Batch.Request().PostAsync(batchRequestContent);
+
+            var servicePrincipalsPage = await returnedResponse.GetResponseByIdAsync<GraphServiceServicePrincipalsCollectionResponse>(servicePrincipalsRequestId);
+
+            foreach (var item in applicationPage)
             {
-                yield return item;
+                var owners = (await returnedResponse.GetResponseByIdAsync<ApplicationOwnersCollectionWithReferencesResponse>(ownerRequestIds[item.AppId])).Value;
+
+                var servicePrincipals = servicePrincipalsPage.Value
+                    .Where(p => p.AppId == item.AppId);
+
+                yield return new ApplicationModel
+                {
+                    AppId = item.AppId,
+                    DisplayName = item.DisplayName,
+                    ServicePrincipalsIds = servicePrincipals.Select(p => p.Id).ToArray(),
+                    OwnersNames = owners.Cast<dynamic>().Select(d => (string)d.DisplayName).ToArray()
+                };
             }
         }
     }
