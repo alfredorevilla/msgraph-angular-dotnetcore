@@ -17,10 +17,13 @@
     },
     "msgraph_angular_dotnetcore": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AZURE_TENANT_ID": "a6d6dca6-674f-4073-9be7-6eab80a03fb2",
+        "AZURE_CLIENT_ID": "a56cb09d-367d-47e7-bf67-84fe9a7028b5",
+        "AZURE_CLIENT_SECRET": "ntSv~k_MxLOm6snDuWz3N5bw.TZE5~5Gz2"
       }
     }
   }

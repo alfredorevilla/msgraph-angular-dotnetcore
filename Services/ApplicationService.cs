@@ -8,7 +8,6 @@ using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using msgraph_angular_dotnetcore.Models;
-using Newtonsoft.Json;
 
 namespace Services
 {
@@ -40,14 +39,28 @@ namespace Services
                 throw new ArgumentException(nameof(searchText));
             }
 
-            var applicationPage = await client.Applications.Request(new Option[] { new HeaderOption("consistencyLevel", "eventual"), new QueryOption("$count", "true") }).Top(5).GetAsync();
+            var applicationPage = await client.Applications
+                .Request(new Option[] {
+                new HeaderOption("consistencyLevel", "eventual"),
+                new QueryOption("$count", "true"),
+                new QueryOption("$search", $"\"displayName:{searchText}\"") })
+                .Top(5)
+                .GetAsync();
 
             var batchRequestContent = new BatchRequestContent();
 
             var servicePrincipalsRequestId = batchRequestContent.AddBatchRequestStep(
-            client.ServicePrincipals.Request().Select("id").Filter(string.Join(" or ", applicationPage.Select(a => $"appId eq '{a.AppId}'"))));
+            client.ServicePrincipals.Request()
+            .Select("id,appId")
+            .Filter(string.Join(" or ", applicationPage.Select(a => $"appId eq '{a.AppId}'"))));
 
-            var ownerRequestIds = applicationPage.Select(a => new { a.AppId, Id = batchRequestContent.AddBatchRequestStep(client.Applications[a.Id].Owners.Request().Select("id,displayName,userPrincipalName")) }).ToDictionary(a => a.AppId, a => a.Id);
+            var ownerRequestIds = applicationPage
+                .Select(a => new
+                {
+                    a.AppId,
+                    Id = batchRequestContent.AddBatchRequestStep(client.Applications[a.Id].Owners.Request().Select("id,displayName,userPrincipalName"))
+                })
+                .ToDictionary(a => a.AppId, a => a.Id);
 
             var returnedResponse = await client.Batch.Request().PostAsync(batchRequestContent);
 
@@ -69,14 +82,5 @@ namespace Services
                 };
             }
         }
-    }
-
-    public class GraphListResponse<T>
-    {
-        [JsonProperty("@odata.context")]
-        public string OdataContext { get; set; }
-
-        [JsonProperty("value")]
-        public IEnumerable<T> Value { get; set; }
     }
 }

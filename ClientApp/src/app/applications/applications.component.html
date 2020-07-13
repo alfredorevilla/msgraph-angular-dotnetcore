@@ -12,6 +12,7 @@
       <th scope="col">App Id</th>
       <th scope="col">Display Name</th>
       <th scope="col">Service Principals</th>
+      <th scope="col">Owners</th>
     </tr>
   </thead>
   <tbody>
@@ -24,8 +25,15 @@
       </td>
       <td>
         <ul>
-          <li *ngFor="let sp of application.servicePrincipalsIds">
-            sp.id
+          <li *ngFor="let spId of application.servicePrincipalsIds">
+            {{spId}}
+          </li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li *ngFor="let ownerName of application.ownersNames">
+            {{ownerName}}
           </li>
         </ul>
       </td>
