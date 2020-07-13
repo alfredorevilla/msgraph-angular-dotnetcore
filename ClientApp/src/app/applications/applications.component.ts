@@ -13,12 +13,22 @@ import { HttpClient } from '@angular/common/http';
 /** applications component*/
 export class ApplicationsComponent {
   applications$: BehaviorSubject<ApplicationModel[]> = new BehaviorSubject<ApplicationModel[]>([]);
+  total$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   filter = new FormControl('');
   constructor(httpClient: HttpClient) {
     this.filter.valueChanges.pipe(
       debounceTime(200),
       distinctUntilChanged(),
-      mergeMap(value => httpClient.get<ApplicationModel[]>(`/api/application?searchText=${value}`)))
-      .subscribe(result => this.applications$.next(result));
+      mergeMap(value => httpClient.get<ApplicationResponse>(`/api/application?searchText=${value}`)))
+      .subscribe(result => {
+        this.applications$.next(result.list);
+        this.total$.next(result.total);
+      });
   }
+}
+
+
+export class ApplicationResponse {
+  list: ApplicationModel[];
+  total: number;
 }

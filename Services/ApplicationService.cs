@@ -32,7 +32,7 @@ namespace Services
 
         private readonly ILogger<ApplicationService> logger;
 
-        public async IAsyncEnumerable<ApplicationModel> SearchAsync(string searchText)
+        public async Task<ApplicationResponseModel> SearchAsync(string searchText)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
@@ -66,6 +66,7 @@ namespace Services
 
             var servicePrincipalsPage = await returnedResponse.GetResponseByIdAsync<GraphServiceServicePrincipalsCollectionResponse>(servicePrincipalsRequestId);
 
+            List<ApplicationModel> list = new List<ApplicationModel>();
             foreach (var item in applicationPage)
             {
                 var owners = (await returnedResponse.GetResponseByIdAsync<ApplicationOwnersCollectionWithReferencesResponse>(ownerRequestIds[item.AppId])).Value;
@@ -73,14 +74,18 @@ namespace Services
                 var servicePrincipals = servicePrincipalsPage.Value
                     .Where(p => p.AppId == item.AppId);
 
-                yield return new ApplicationModel
+                list.Add(new ApplicationModel
                 {
                     AppId = item.AppId,
                     DisplayName = item.DisplayName,
                     ServicePrincipalsIds = servicePrincipals.Select(p => p.Id).ToArray(),
                     OwnersNames = owners.Cast<dynamic>().Select(d => (string)d.DisplayName).ToArray()
-                };
+                });
             }
+
+            return new ApplicationResponseModel(list, (long)applicationPage.AdditionalData["@odata.count"]);
         }
     }
+
+    
 }

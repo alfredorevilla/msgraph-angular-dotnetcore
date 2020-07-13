@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using msgraph_angular_dotnetcore.Models;
 using Services;
 
 namespace msgraph_angular_dotnetcore.Controllers
@@ -16,20 +15,10 @@ namespace msgraph_angular_dotnetcore.Controllers
             this.applicationService = applicationService;
         }
 
-        public async IAsyncEnumerable<ApplicationModel> QuickGet([FromQuery] string searchText)
+        [HttpGet]
+        public Task<ApplicationResponseModel> Search([FromQuery] string searchText)
         {
-            var result = applicationService.SearchAsync(searchText);
-
-            await foreach (var item in result)
-            {
-                yield return new ApplicationModel
-                {
-                    AppId = item.AppId,
-                    DisplayName = item.DisplayName,
-                    ServicePrincipalsIds = item.ServicePrincipalsIds,
-                    OwnersNames = item.OwnersNames
-                };
-            }
+            return applicationService.SearchAsync(searchText);
         }
     }
 }
