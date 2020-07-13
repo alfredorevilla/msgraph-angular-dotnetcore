@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using msgraph_angular_dotnetcore.Models;
 using Services;
 
 namespace msgraph_angular_dotnetcore.Controllers
