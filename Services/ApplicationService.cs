@@ -86,6 +86,4 @@ namespace Services
             return new ApplicationResponseModel(list, (long)applicationPage.AdditionalData["@odata.count"]);
         }
     }
-
-    
 }
